@@ -28,9 +28,19 @@ class Point:
     def manhattan_distance(self, other) -> int:
         return abs(other.y - self.y) + abs(other.x - self.x)
 
+    def to(self, other):
+        if self.x == other.x:
+            return Movement(
+                self,
+                f"{'U' if self.y <= other.y else 'D'}{abs(other.y-self.y)}")
+        else:
+            return Movement(
+                self,
+                f"{'R' if self.x <= other.x else 'L'}{abs(other.x-self.x)}")
+
 
 class Movement:
-    def __init__(self, action: str, start: Point) -> None:
+    def __init__(self, start: Point, action: str) -> None:
         direction: str = action[0]
         self.start: Point = start
         if direction == 'R' or direction == 'U':
@@ -100,17 +110,29 @@ class Wire:
         self.movements: List[Movement] = []
         old_end: Point = Point(0, 0)
         for movement in movements:
-            self.movements.append(Movement(movement, old_end))
+            self.movements.append(Movement(old_end, movement))
             old_end = self.movements[-1].stop
 
     def __repr__(self) -> str:
         return "[" + ", ".join([x.__repr__() for x in self.movements]) + "]"
 
-    def intersections_with(self, other) -> List[Point]:
+    def intersections_with(self, other):
         intersections = []
+        steps: List[int] = [0, 0]
+
         for x in self.movements:
+            steps[0] += abs(x.magnitude)
+            steps[1] = 0
             for y in other.movements:
-                intersections.extend(x.overlaps(y))
+                steps[1] += abs(y.magnitude)
+                if x.overlaps(y) and (not (x.overlaps(y)[0] == Point(0, 0))):
+                    tmp = steps[0]
+                    steps[0] -= abs(x.magnitude)
+                    steps[0] += abs(x.start.to(x.overlaps(y)[0]).magnitude)
+                    steps[1] -= abs(y.magnitude)
+                    steps[1] += abs(y.start.to(x.overlaps(y)[0]).magnitude)
+                    intersections.append((x.overlaps(y)[0], sum(steps)))
+                    steps[0], steps[1] = tmp, 0
         return intersections
 
 
@@ -119,11 +141,20 @@ def main() -> None:
         wires: List[Wire] = [Wire(line.strip().split(','))
                              for line in f.readlines()]
     ints: List[Point] = wires[0].intersections_with(wires[1])
-    ints.pop(0)
-    distances: List[int] = [Point(0, 0).manhattan_distance(x) for x in ints]
+    distances: List[int] = [
+        Point(0, 0).manhattan_distance(x[0])
+        for x in ints
+    ]
 
-    print(f"Closest point: {ints[distances.index(min(distances))]}")
+    # print(ints, distances, sep='\n')
+    print(f"Closest intersection:", end=" ")
+    print(ints[distances.index(min(distances))][0])
     print(f"Manhattan distance: {min(distances)}")
+
+    print(f"\nFewest steps intersection:", end=" ")
+    print(min(ints, key=lambda x: x[1])[0])
+    print(f"Steps:", end=" ")
+    print(min(ints, key=lambda x: x[1])[1])
 
 
 if __name__ == '__main__':
