@@ -21,6 +21,10 @@ def show(answer, time_taken):
 
 def run(day):
     infile = AOC_DIR / f"day{day}" / "input"
+    if not infile.parent.exists():
+        raise NotImplementedError(f"Day {day} not yet attempted.")
+    if not infile.exists():
+        raise NotImplementedError(f"No input file for day {day} was found.")
 
     def go(part):
         solve = eval(f'__import__("day{day}").part{part}')
