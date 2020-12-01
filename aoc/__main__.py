@@ -1,6 +1,7 @@
 import sys
 import pathlib
 import time
+import prefixed
 
 AOC_DIR = pathlib.Path(__file__).parent.absolute()
 
@@ -14,8 +15,8 @@ def bench(func):
 
 
 def show(answer, time_taken):
-    Δt = f"{time_taken:.2E}" if time_taken < 0.01 else f"{time_taken:.2}"
-    return f"{answer:10}\t({Δt}s)"
+    Δt = prefixed.Float(time_taken)
+    return f"{answer:10}\t({Δt:.2h}s)"
 
 
 def run(day):
@@ -38,8 +39,10 @@ def main(args):
         most_recent_day = sorted(all_days, reverse=True)[0]
         day = most_recent_day[-2:]
 
-    print(f"{' '*27}Day {day}{' '*27}")
-    print("=" * 60)
+    header_len = 36
+    offset = " " * (header_len // 2 - 2)
+    print(f"{offset}Day {day}{offset}")
+    print("=" * header_len)
     try:
         run(day)
     except (ImportError, NotImplementedError, AttributeError) as e:

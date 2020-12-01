@@ -36,9 +36,18 @@ In your expense report, what is the product of the three entries that sum to
 2020?
 """
 
+import pytest
 import operator
 import itertools
 import functools
+
+
+def part1(infile, n=2):
+    return product(n_nums_that_sum_to(2020, parse(infile), n))
+
+
+def part2(infile):
+    return part1(infile, n=3)
 
 
 def parse(fileobj, factory=int):
@@ -51,13 +60,19 @@ def n_nums_that_sum_to(total, xs, n=2):
     )
 
 
-def product(*args):
-    return functools.reduce(operator.mul, args, 1)
+def product(xs):
+    return functools.reduce(operator.mul, xs, 1)
 
 
-def part1(infile, n=2):
-    return product(*n_nums_that_sum_to(2020, parse(infile), n))
+@pytest.fixture
+def parsed_input():
+    return [1721, 979, 366, 299, 675, 1456]
 
 
-def part2(infile):
-    return part1(infile, n=3)
+@pytest.mark.parametrize(
+    "solution,nums", [(part1, (1721, 299)), (part2, (979, 366, 675))]
+)
+def test_day01(parsed_input, solution, nums):
+    result = solution(parsed_input)
+    assert 2020 == sum(nums)
+    assert result == product(nums)
