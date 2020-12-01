@@ -23,7 +23,7 @@ def run(day):
     infile = AOC_DIR / f"day{day}" / "input"
 
     def go(part):
-        solve = eval(f'__import__(f"day{day}").part{part}')
+        solve = eval(f'__import__("day{day}").part{part}')
         solution = show(*bench(solve)(infile.open()))
         print(f"Part {part}: {solution}")
 
