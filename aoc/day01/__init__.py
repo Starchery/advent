@@ -1,25 +1,25 @@
-import operator as op
-from itertools import product as cartesian_product
-from functools import reduce
+import operator
+import itertools
+import functools
 
 
-def parse(fileobj, factory=float):
+def parse(fileobj, factory=int):
     return map(factory, fileobj)
 
 
 def n_nums_that_sum_to(total, xs, n=2):
     return next(
-        filter(lambda ns: sum(ns) == total, cartesian_product(xs, repeat=n))
+        filter(lambda ns: sum(ns) == total, itertools.product(xs, repeat=n))
     )
 
 
 def product(*args):
-    return reduce(op.mul, args, 1)
+    return functools.reduce(operator.mul, args, 1)
 
 
-def part1(input):
-    return product(*n_nums_that_sum_to(2020, parse(input, int)))
+def part1(infile, n=2):
+    return product(*n_nums_that_sum_to(2020, parse(infile), n))
 
 
-def part2(input):
-    return product(*n_nums_that_sum_to(2020, parse(input, int), n=3))
+def part2(infile):
+    return part1(infile, n=3)
