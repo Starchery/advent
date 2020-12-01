@@ -56,8 +56,8 @@ def parse(fileobj, factory=int):
 
 
 def n_nums_that_sum_to(total, xs, n=2):
-    cartesian_product = itertools.product(xs, repeat=n)
-    return next(filter(lambda ns: sum(ns) == total, cartesian_product))
+    combos = itertools.combinations(xs, n)
+    return next(filter(lambda ns: sum(ns) == total, combos))
 
 
 def product(xs):
