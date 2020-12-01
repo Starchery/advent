@@ -1,43 +1,43 @@
 import sys
-from pathlib import Path
-from time import time
+import pathlib
+import time
+
+AOC_DIR = pathlib.Path(__file__).parent.absolute()
 
 
 def bench(func):
     def go(*args, **kwargs):
-        start = time()
-        return (func(*args, **kwargs), time() - start)
+        start = time.time()
+        return (func(*args, **kwargs), time.time() - start)
 
     return go
 
 
 def show(answer, time_taken):
-    if time_taken < 0.01:
-        return f"{answer:10}\t({time_taken:.2E}s)"
-    return f"{answer:10}\t({time_taken:.2}s)"
+    Δt = f"{time_taken:.2E}" if time_taken < 0.01 else f"{time_taken:.2}"
+    return f"{answer:10}\t({Δt}s)"
 
 
 def run(day):
-    def go(part):
-        print(
-            f"Part {part}: ",
-            show(
-                *bench(eval(f'__import__(f"day{day}").part{part}'))(
-                    (
-                        Path(__file__).parent.absolute()
-                        / f"day{day}"
-                        / "input"
-                    ).open()
-                ),
-            ),
-        )
+    infile = AOC_DIR / f"day{day}" / "input"
 
-    go(1)
-    go(2)
+    def go(part):
+        solve = eval(f'__import__(f"day{day}").part{part}')
+        solution = show(*bench(solve)(infile.open()))
+        print(f"Part {part}: {solution}")
+
+    for n in (1, 2):
+        go(part=n)
 
 
 def main(args):
-    day = "0" + args[1] if len(args[1]) == 1 else args[1]
+    try:
+        day = "0" + args[1] if len(args[1]) == 1 else args[1]
+    except IndexError:
+        all_days = (day.name for day in AOC_DIR.iterdir() if "day" in day.name)
+        most_recent_day = sorted(all_days, reverse=True)[0]
+        day = most_recent_day[-2:]
+
     print(f"{' '*27}Day {day}{' '*27}")
     print("=" * 60)
     try:
