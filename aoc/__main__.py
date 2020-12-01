@@ -31,6 +31,13 @@ def run(day):
         go(part=n)
 
 
+def print_header(day):
+    header_len = 36
+    offset = " " * (header_len // 2 - 2)
+    print(f"{offset}Day {day}{offset}")
+    print("=" * header_len)
+
+
 def main(args):
     try:
         day = "0" + args[1] if len(args[1]) == 1 else args[1]
@@ -39,10 +46,7 @@ def main(args):
         most_recent_day = sorted(all_days, reverse=True)[0]
         day = most_recent_day[-2:]
 
-    header_len = 36
-    offset = " " * (header_len // 2 - 2)
-    print(f"{offset}Day {day}{offset}")
-    print("=" * header_len)
+    print_header(day)
     try:
         run(day)
     except (ImportError, NotImplementedError, AttributeError) as e:
