@@ -34,9 +34,34 @@
     How many passwords are valid according to their policies?
 """
 
+import dataclasses
+
+
+@dataclasses.dataclass
+class Line:
+    bounds: range
+    letter: str
+    password: str
+
+    def is_valid(self):
+        return self.password.count(self.letter) in self.bounds
+
+
+def parse(fileobj):
+    def parse_line(line):
+        min, max, letter = line[:3]
+        password = line[3:]
+        min, max = int(min), int(max)
+        return Line(range(min, max + 1), letter, password)
+
+    yield from map(
+        parse_line,
+        map(lambda line: "".join(c for c in line if c.isalnum()), fileobj),
+    )
+
 
 def part1(infile):
-    raise NotImplementedError("Day 2 Part 1 not finished.")
+    return "\n".join(map(str, filter(Line.is_valid, parse(infile))))
 
 
 def part2(infile):
