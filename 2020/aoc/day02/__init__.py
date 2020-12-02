@@ -48,21 +48,17 @@ class Line:
         return self.password.count(self.letter) in self.bounds
 
 
-def parse(fileobj):
-    def parse_line(line):
-        min, max, letter = line[:3]
-        password = line[3:]
-        min, max = int(min), int(max)
-        return Line(range(min, max + 1), letter, password)
+def parsed(fileobj):
+    def parse_line(line: str):
+        bounds, letter, password = line.split()
+        min, max = map(int, bounds.split("-"))
+        return Line(range(min, max + 1), letter[:-1], password)
 
-    yield from map(
-        parse_line,
-        map(lambda line: "".join(c for c in line if c.isalnum()), fileobj),
-    )
+    yield from map(parse_line, fileobj)
 
 
 def part1(infile):
-    return len(tuple(map(str, filter(Line.is_valid, parse(infile)))))
+    return len(tuple(filter(Line.is_valid, parsed(infile))))
 
 
 def part2(infile):
@@ -70,9 +66,9 @@ def part2(infile):
 
 
 @pytest.fixture
-def input_data():
+def sample_data():
     return ["1-3 a: abcde", "1-3 b: cdefg", "2-9 c: ccccccccc"]
 
 
-def test_day02_part1(input_data):
-    assert part1(input_data) == 2
+def test_day02_part1(sample_data):
+    assert part1(sample_data) == 2
