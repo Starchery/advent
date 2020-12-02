@@ -58,7 +58,7 @@ def parsed(fileobj):
 
 
 def part1(infile):
-    return len(tuple(filter(Line.is_valid, parsed(infile))))
+    return len([line for line in parsed(infile) if line.is_valid()])
 
 
 def part2(infile):
