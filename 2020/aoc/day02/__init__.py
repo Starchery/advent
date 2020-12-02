@@ -74,6 +74,12 @@ class Line:
     def is_valid(self):
         return self.password.count(self.letter) in self.bounds
 
+    def new_is_valid(self):
+        first, last = self.bounds.start - 1, self.bounds.stop - 2
+        return (self.password[first] == self.letter) ^ (
+            self.password[last] == self.letter
+        )
+
 
 def parsed(fileobj):
     def parse_line(line: str):
@@ -84,12 +90,12 @@ def parsed(fileobj):
     yield from map(parse_line, fileobj)
 
 
-def part1(infile):
-    return len([line for line in parsed(infile) if line.is_valid()])
+def part1(infile, predicate=Line.is_valid):
+    return len([line for line in parsed(infile) if predicate(line)])
 
 
 def part2(infile):
-    raise NotImplementedError("Day 2 Part 2 not finished.")
+    return part1(infile, predicate=Line.new_is_valid)
 
 
 @pytest.fixture
@@ -99,3 +105,7 @@ def sample_data():
 
 def test_day02_part1(sample_data):
     assert part1(sample_data) == 2
+
+
+def test_day02_part2(sample_data):
+    assert part2(sample_data) == 1
