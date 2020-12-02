@@ -71,14 +71,15 @@ class Line:
     letter: str
     password: str
 
-    def is_valid(self):
+    def is_valid(self) -> bool:
         return self.password.count(self.letter) in self.bounds
 
-    def new_is_valid(self):
-        first, last = self.bounds.start - 1, self.bounds.stop - 2
-        return (self.password[first] == self.letter) ^ (
-            self.password[last] == self.letter
-        )
+    def is_valid_new(self) -> bool:
+        def is_letter_at(idx: int) -> bool:
+            return self.password[idx] == self.letter
+
+        pos1, pos2 = self.bounds.start - 1, self.bounds.stop - 2
+        return is_letter_at(pos1) ^ is_letter_at(pos2)
 
 
 def parsed(fileobj):
@@ -95,7 +96,7 @@ def part1(infile, predicate=Line.is_valid):
 
 
 def part2(infile):
-    return part1(infile, predicate=Line.new_is_valid)
+    return part1(infile, predicate=Line.is_valid_new)
 
 
 @pytest.fixture
