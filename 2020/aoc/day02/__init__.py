@@ -35,6 +35,7 @@
 """
 
 import dataclasses
+import pytest
 
 
 @dataclasses.dataclass
@@ -61,8 +62,17 @@ def parse(fileobj):
 
 
 def part1(infile):
-    return "\n".join(map(str, filter(Line.is_valid, parse(infile))))
+    return len(tuple(map(str, filter(Line.is_valid, parse(infile)))))
 
 
 def part2(infile):
     raise NotImplementedError("Day 2 Part 2 not finished.")
+
+
+@pytest.fixture
+def input_data():
+    return ["1-3 a: abcde", "1-3 b: cdefg", "2-9 c: ccccccccc"]
+
+
+def test_day02_part1(input_data):
+    assert part1(input_data) == 2
