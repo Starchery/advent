@@ -69,10 +69,78 @@
     3 and down 1, how many trees would you encounter?
 """
 
+import itertools
+import pytest
+from typing import TextIO
+from fractions import Fraction
+
+
+def iterate(n: int, f):
+    def go(x):
+        for _ in range(n):
+            f(x)
+
+    return go
+
+
+def drop(n: int, xs):
+    iterate(n, next)(xs)
+
+
+def traverse_forest(fileobj: TextIO, slope: Fraction):
+    forest = map(
+        itertools.cycle,
+        map(lambda line: filter(lambda s: not s.isspace(), line), fileobj),
+    )
+    trees = 0
+    offset = 0
+    for line in forest:
+        drop(offset, line)
+        if next(line) == "#":
+            trees += 1
+        try:
+            n = slope.numerator - 1
+            current_line = None
+            prev_line = None
+            while n > 0:
+                prev_line = current_line
+                current_line = next(forest)
+                n -= 1
+        except StopIteration:
+            forest = iter([prev_line])
+            offset += slope.denominator
+            continue
+        offset += slope.denominator
+
+    return trees
+
 
 def part1(infile):
-    raise NotImplementedError("D3P1 not attempted.")
+    return traverse_forest(infile, Fraction(1, 3))
 
 
 def part2(infile):
     raise NotImplementedError("D3P2 not attempted.")
+
+
+@pytest.fixture
+def sample_data():
+    return [
+        "..##.......",
+        "#...#...#..",
+        ".#....#..#.",
+        "..#.#...#.#",
+        ".#...##..#.",
+        "..#.##.....",
+        ".#.#.#....#",
+        ".#........#",
+        "#.##...#...",
+        "#...##....#",
+        ".#..#...#.#",
+    ]
+
+
+def test_part1(sample_data):
+    res = part1(sample_data)
+
+    assert res == 7
