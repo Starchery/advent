@@ -93,10 +93,9 @@
 """
 
 import itertools
-import pytest
-from typing import TextIO
-from fractions import Fraction
 import math
+import pytest
+from fractions import Fraction
 
 
 def iterate(n: int, f):
@@ -111,7 +110,7 @@ def drop(n: int, xs):
     iterate(n, next)(xs)
 
 
-def traverse_forest(fileobj: TextIO, slope: Fraction):
+def traverse_forest(fileobj, slope: Fraction):
     forest = map(
         itertools.cycle,
         map(lambda line: filter(lambda s: not s.isspace(), line), fileobj),
@@ -140,7 +139,8 @@ def traverse_forest(fileobj: TextIO, slope: Fraction):
 
 
 def part1(infile, slope=Fraction(1, 3)):
-    infile.seek(0)
+    if not isinstance(infile, list):
+        infile.seek(0)
     return traverse_forest(infile, slope)
 
 
@@ -148,7 +148,7 @@ def part2(infile):
     slopes = [
         Fraction(n, d) for (n, d) in [(1, 1), (1, 3), (1, 5), (1, 7), (2, 1)]
     ]
-    return math.prod(part1(infile, slope=x) for x in slopes)
+    return math.prod(part1(infile, slope) for slope in slopes)
 
 
 @pytest.fixture
@@ -169,15 +169,8 @@ def sample_data():
 
 
 def test_part1(sample_data):
-    res = part1(sample_data)
-    assert res == 7
+    assert part1(sample_data) == 7
 
 
 def test_part2(sample_data):
-    slopes = [
-        Fraction(n, d) for (n, d) in [(1, 1), (1, 3), (1, 5), (1, 7), (2, 1)]
-    ]
-    xs = [part1(sample_data, slope=x) for x in slopes]
-    assert xs == [2, 7, 3, 4, 2]
-
-    assert math.prod(xs) == 336
+    assert part2(sample_data) == 336
