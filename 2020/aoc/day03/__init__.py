@@ -96,6 +96,7 @@ import itertools
 import pytest
 from typing import TextIO
 from fractions import Fraction
+import math
 
 
 def iterate(n: int, f):
@@ -138,12 +139,16 @@ def traverse_forest(fileobj: TextIO, slope: Fraction):
     return trees
 
 
-def part1(infile):
-    return traverse_forest(infile, Fraction(1, 3))
+def part1(infile, slope=Fraction(1, 3)):
+    infile.seek(0)
+    return traverse_forest(infile, slope)
 
 
 def part2(infile):
-    raise NotImplementedError("D3P2 not attempted.")
+    slopes = [
+        Fraction(n, d) for (n, d) in [(1, 1), (1, 3), (1, 5), (1, 7), (2, 1)]
+    ]
+    return math.prod(part1(infile, slope=x) for x in slopes)
 
 
 @pytest.fixture
@@ -165,5 +170,14 @@ def sample_data():
 
 def test_part1(sample_data):
     res = part1(sample_data)
-
     assert res == 7
+
+
+def test_part2(sample_data):
+    slopes = [
+        Fraction(n, d) for (n, d) in [(1, 1), (1, 3), (1, 5), (1, 7), (2, 1)]
+    ]
+    xs = [part1(sample_data, slope=x) for x in slopes]
+    assert xs == [2, 7, 3, 4, 2]
+
+    assert math.prod(xs) == 336
