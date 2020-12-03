@@ -92,39 +92,58 @@
 
 """
 
+import io
 import itertools
 import math
 import pytest
 from fractions import Fraction
+from typing import Callable, Iterable, Iterator, Optional, Union
+
+File = io.TextIOBase
+Input = Union[io.TextIOBase, Iterable[str]]
 
 
-def iterate(n: int, f):
-    def go(x):
+def part1(infile: Input, slope: Fraction = Fraction(1, 3)) -> int:
+    if isinstance(infile, File):
+        infile.seek(0)
+    return traverse_forest(infile, slope)
+
+
+def part2(infile: Input) -> int:
+    slopes = [
+        Fraction(n, d) for (n, d) in [(1, 1), (1, 3), (1, 5), (1, 7), (2, 1)]
+    ]
+    return math.prod(part1(infile, slope) for slope in slopes)
+
+
+def iterate(
+    n: int, f: Callable[[Iterator[str]], Optional[str]]
+) -> Callable[[Iterator[str]], None]:
+    def go(x: Iterator[str]) -> None:
         for _ in range(n):
             f(x)
 
     return go
 
 
-def drop(n: int, xs):
+def drop(n: int, xs: Iterator[str]) -> None:
     iterate(n, next)(xs)
 
 
-def traverse_forest(fileobj, slope: Fraction):
-    forest = map(
+def traverse_forest(infile: Input, slope: Fraction) -> int:
+    forest: Iterator[itertools.cycle[str]] = map(
         itertools.cycle,
-        map(lambda line: filter(lambda s: not s.isspace(), line), fileobj),
+        map(lambda line: filter(lambda s: not s.isspace(), line), infile),
     )
-    trees = 0
-    offset = 0
+    trees: int = (offset := 0)
     for line in forest:
         drop(offset, line)
         if next(line) == "#":
             trees += 1
+        current_line: Optional[itertools.cycle[str]] = line
+        prev_line: itertools.cycle[str] = current_line
         try:
-            n = slope.numerator - 1
-            current_line = None
-            prev_line = None
+            n: int = slope.numerator - 1
             while n > 0:
                 prev_line = current_line
                 current_line = next(forest)
@@ -138,21 +157,8 @@ def traverse_forest(fileobj, slope: Fraction):
     return trees
 
 
-def part1(infile, slope=Fraction(1, 3)):
-    if not isinstance(infile, list):
-        infile.seek(0)
-    return traverse_forest(infile, slope)
-
-
-def part2(infile):
-    slopes = [
-        Fraction(n, d) for (n, d) in [(1, 1), (1, 3), (1, 5), (1, 7), (2, 1)]
-    ]
-    return math.prod(part1(infile, slope) for slope in slopes)
-
-
 @pytest.fixture
-def sample_data():
+def sample_data() -> "list[str]":
     return [
         "..##.......",
         "#...#...#..",
@@ -168,9 +174,9 @@ def sample_data():
     ]
 
 
-def test_part1(sample_data):
+def test_part1(sample_data: "list[str]"):
     assert part1(sample_data) == 7
 
 
-def test_part2(sample_data):
+def test_part2(sample_data: "list[str]"):
     assert part2(sample_data) == 336
