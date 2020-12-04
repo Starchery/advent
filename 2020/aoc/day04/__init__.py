@@ -171,8 +171,10 @@ def is_one_of(vals):
 
 
 def valid_hcl(val):
-    return val[0] == "#" and all(
-        ("0" <= c <= "9") or ("a" <= c <= "f") for c in val[1:]
+    return (
+        val[0] == "#"
+        and len(val) == 7
+        and all(("0" <= c <= "9") or ("a" <= c <= "f") for c in val[1:])
     )
 
 
@@ -212,26 +214,36 @@ def part1(infile):
 
 def part2(infile):
     vals = list(parsed(infile))
-    vals.pop()
+    import pprint
 
     vals = list(
         map(
             lambda line: dict(
-                map(lambda pair: tuple(pair.split(":")), line.split(" "))
+                map(
+                    lambda pair: tuple(pair.strip().split(":")),
+                    line.strip().split(" "),
+                )
             ),
             vals,
         )
     )
+    # pprint.pprint(list(map(lambda d: list(d.values()), vals)))
+    # pprint.pprint(sorted(list(REQUIRED.keys())))
 
     wig = list(
         filter(
-            lambda d: d.keys() == REQUIRED.keys(),
+            lambda d: d.keys() >= REQUIRED.keys(),
             map(lambda d: {**d, "cid": ()}, vals),
         )
     )
+    pprint.pprint(list(map(lambda d: sorted(list(d.items())), wig)))
+
     tea = list(map(lambda d: [REQUIRED[k](v) for (k, v) in d.items()], wig))
-    anioop = list(map(all, tea))
-    return sum(anioop)
+    from json import dumps
+
+    print(dumps(tea))
+    # anioop = list(map(all, tea))
+    return tea.count([True] * 8)
 
 
 @pytest.fixture
@@ -287,7 +299,10 @@ def valid_data():
         "pid:545766238 ecl:hzl\n",
         "eyr:2022\n",
         "\n",
-        "iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021 pid:093154719\n",
+        (
+            "iyr:2010 hgt:158cm hcl:#b6652a ecl:blu "
+            + "byr:1944 eyr:2021 pid:093154719\n"
+        ),
         "\n",
     ]
 
