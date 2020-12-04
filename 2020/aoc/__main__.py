@@ -16,7 +16,7 @@ def bench(func):
 
 def show(answer, time_taken):
     Δt = prefixed.Float(time_taken)
-    return f"{answer:10}\t({Δt:.2h}s)"
+    return f"{answer:10}\t({Δt:.2h}s)" if Δt and answer else ""
 
 
 def run(day):
