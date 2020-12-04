@@ -145,6 +145,37 @@
 import pytest
 
 
+def part1(infile):
+    valid_passports = map(
+        lambda line: all(field in line + "cid" for field in REQUIRED),
+        parsed(infile),
+    )
+    return sum(valid_passports)
+
+
+def part2(infile):
+    passports = map(
+        lambda line: dict(tuple(pair.split(":")) for pair in line.split()),
+        parsed(infile),
+    )
+
+    complete_passports = filter(
+        lambda d: d.keys() >= REQUIRED.keys(),
+        map(lambda d: {**d, "cid": ()}, passports),
+    )
+
+    valid_passports = map(
+        lambda d: (REQUIRED[k](v) for (k, v) in d.items()), complete_passports
+    )
+
+    return sum(map(all, valid_passports))
+
+
+def parsed(infile):
+    data = "".join(infile)
+    yield from (line.replace("\n", " ") for line in data.split("\n\n"))
+
+
 def n_digits(n: int):
     return lambda val: all(c.isdigit() for c in val) and len(val) == n
 
@@ -188,46 +219,6 @@ REQUIRED = {
     "pid": n_digits(9),
     "cid": lambda _: True,
 }
-
-
-def parsed(infile):
-    data = "".join(infile)
-    yield from (line.replace("\n", " ") for line in data.split("\n\n"))
-
-
-def all_fields_present(parsed_infile):
-    return all(
-        map(
-            lambda line: all(field in line for field in REQUIRED),
-            parsed_infile,
-        )
-    )
-
-
-def part1(infile):
-    valids = map(
-        lambda line: all(field in line + "cid" for field in REQUIRED),
-        parsed(infile),
-    )
-    return sum(valids)
-
-
-def part2(infile):
-    passports = map(
-        lambda line: dict(tuple(pair.split(":")) for pair in line.split()),
-        parsed(infile),
-    )
-
-    complete_passports = filter(
-        lambda d: d.keys() >= REQUIRED.keys(),
-        map(lambda d: {**d, "cid": ()}, passports),
-    )
-
-    valid_passports = map(
-        lambda d: (REQUIRED[k](v) for (k, v) in d.items()), complete_passports
-    )
-
-    return sum(map(all, valid_passports))
 
 
 @pytest.fixture
