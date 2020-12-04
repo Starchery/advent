@@ -213,37 +213,21 @@ def part1(infile):
 
 
 def part2(infile):
-    vals = list(parsed(infile))
-    import pprint
-
-    vals = list(
-        map(
-            lambda line: dict(
-                map(
-                    lambda pair: tuple(pair.strip().split(":")),
-                    line.strip().split(" "),
-                )
-            ),
-            vals,
-        )
+    passports = map(
+        lambda line: dict(tuple(pair.split(":")) for pair in line.split()),
+        parsed(infile),
     )
-    # pprint.pprint(list(map(lambda d: list(d.values()), vals)))
-    # pprint.pprint(sorted(list(REQUIRED.keys())))
 
-    wig = list(
-        filter(
-            lambda d: d.keys() >= REQUIRED.keys(),
-            map(lambda d: {**d, "cid": ()}, vals),
-        )
+    complete_passports = filter(
+        lambda d: d.keys() >= REQUIRED.keys(),
+        map(lambda d: {**d, "cid": ()}, passports),
     )
-    pprint.pprint(list(map(lambda d: sorted(list(d.items())), wig)))
 
-    tea = list(map(lambda d: [REQUIRED[k](v) for (k, v) in d.items()], wig))
-    from json import dumps
+    valid_passports = map(
+        lambda d: (REQUIRED[k](v) for (k, v) in d.items()), complete_passports
+    )
 
-    print(dumps(tea))
-    # anioop = list(map(all, tea))
-    return tea.count([True] * 8)
+    return sum(map(all, valid_passports))
 
 
 @pytest.fixture
