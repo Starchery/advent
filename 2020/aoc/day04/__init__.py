@@ -144,27 +144,94 @@
 
 import pytest
 
+
+def n_digits(n: int):
+    return lambda val: all(c.isdigit() for c in val) and len(val) == n
+
+
+def clamp(lo, hi, x) -> bool:
+    return int(x) in range(lo, hi + 1)
+
+
+def valid_hgt(val) -> bool:
+    return (
+        "cm" in val
+        and clamp(150, 193, val[:-2])
+        or "in" in val
+        and clamp(59, 76, val[:-2])
+    )
+
+
+def four_digits_in_range(lo, hi):
+    return lambda val: n_digits(4)(val) and clamp(lo, hi, val)
+
+
+def is_one_of(vals):
+    return lambda x: any(x == val for val in vals.split())
+
+
+def valid_hcl(val):
+    return val[0] == "#" and all(
+        ("0" <= c <= "9") or ("a" <= c <= "f") for c in val[1:]
+    )
+
+
 REQUIRED = {
-    "byr",
-    "iyr",
-    "eyr",
-    "hgt",
-    "hcl",
-    "ecl",
-    "pid",
-    # "cid",
+    "byr": four_digits_in_range(1920, 2002),
+    "iyr": four_digits_in_range(2010, 2020),
+    "eyr": four_digits_in_range(2020, 2030),
+    "hgt": valid_hgt,
+    "hcl": valid_hcl,
+    "ecl": is_one_of("amb blu brn gry grn hzl oth"),
+    "pid": n_digits(9),
+    "cid": lambda _: True,
 }
 
 
+def parsed(infile):
+    data = "".join(infile)
+    yield from (line.replace("\n", " ") for line in data.split("\n\n"))
+
+
+def all_fields_present(parsed_infile):
+    return all(
+        map(
+            lambda line: all(field in line for field in REQUIRED),
+            parsed_infile,
+        )
+    )
+
+
 def part1(infile):
-    data = infile.read()
-    lines = (line.replace("\n", " ") for line in data.split("\n\n"))
-    valids = map(lambda line: all(field in line for field in REQUIRED), lines)
+    valids = map(
+        lambda line: all(field in line + "cid" for field in REQUIRED),
+        parsed(infile),
+    )
     return sum(valids)
 
 
 def part2(infile):
-    pass
+    vals = list(parsed(infile))
+    vals.pop()
+
+    vals = list(
+        map(
+            lambda line: dict(
+                map(lambda pair: tuple(pair.split(":")), line.split(" "))
+            ),
+            vals,
+        )
+    )
+
+    wig = list(
+        filter(
+            lambda d: d.keys() == REQUIRED.keys(),
+            map(lambda d: {**d, "cid": ()}, vals),
+        )
+    )
+    tea = list(map(lambda d: [REQUIRED[k](v) for (k, v) in d.items()], wig))
+    anioop = list(map(all, tea))
+    return sum(anioop)
 
 
 @pytest.fixture
@@ -186,5 +253,54 @@ def sample_data():
     ]
 
 
+@pytest.fixture
+def invalid_data():
+    return [
+        "eyr:1972 cid:100\n",
+        "hcl:#18171d ecl:amb hgt:170 pid:186cm iyr:2018 byr:1926\n",
+        "\n",
+        "iyr:2019\n",
+        "hcl:#602927 eyr:1967 hgt:170cm\n",
+        "ecl:grn pid:012533040 byr:1946\n",
+        "\n",
+        "hcl:dab227 iyr:2012\n",
+        "ecl:brn hgt:182cm pid:021572410 eyr:2020 byr:1992 cid:277\n",
+        "\n",
+        "hgt:59cm ecl:zzz\n",
+        "eyr:2038 hcl:74454a iyr:2023\n",
+        "pid:3556412378 byr:2007\n",
+        "\n",
+    ]
+
+
+@pytest.fixture
+def valid_data():
+    return [
+        "pid:087499704 hgt:74in ecl:grn iyr:2012 eyr:2030 byr:1980\n",
+        "hcl:#623a2f\n",
+        "\n",
+        "eyr:2029 ecl:blu cid:129 byr:1989\n",
+        "iyr:2014 pid:896056539 hcl:#a97842 hgt:165cm\n",
+        "\n",
+        "hcl:#888785\n",
+        "hgt:164cm byr:2001 iyr:2015 cid:88\n",
+        "pid:545766238 ecl:hzl\n",
+        "eyr:2022\n",
+        "\n",
+        "iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021 pid:093154719\n",
+        "\n",
+    ]
+
+
 def test_part1(sample_data):
     assert part1(sample_data) == 2
+
+
+def test_invalid_data_part2(invalid_data):
+    res = part2(invalid_data)
+    assert res == 0
+
+
+def test_valid_data_part2(valid_data):
+    res = part2(valid_data)
+    assert res == 4
