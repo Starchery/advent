@@ -80,11 +80,18 @@ import operator as op
 
 
 def part1(infile):
-    return max(map(op.attrgetter("id"), map(parse_boarding_pass, infile)))
+    return max(all_ids(infile))
 
 
 def part2(infile):
-    raise NotImplementedError
+    seats = sorted(all_ids(infile))
+    for n in range(min(seats), max(seats)):
+        if n - 1 in seats and n + 1 in seats and n not in seats:
+            return n
+
+
+def all_ids(infile):
+    return map(op.attrgetter("id"), map(parse_boarding_pass, infile))
 
 
 @dataclasses.dataclass
